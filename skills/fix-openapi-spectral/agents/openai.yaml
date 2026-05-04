@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fix OpenAPI Spectral"
+  short_description: "Fix Spectral and OWASP OpenAPI findings"
+  default_prompt: "Use $fix-openapi-spectral to fix Spectral and OWASP findings in this OpenAPI spec."

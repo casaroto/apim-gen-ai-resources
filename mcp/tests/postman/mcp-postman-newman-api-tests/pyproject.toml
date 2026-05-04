@@ -1,0 +1,14 @@
+[project]
+name = "mcp-postman-newman-api-tests"
+version = "0.1.0"
+description = "FastMCP server for running Postman/Newman API tests from OpenAPI specs"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.2.0",
+    "pyyaml>=6.0.0",
+    "starlette>=0.27",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-xvs"

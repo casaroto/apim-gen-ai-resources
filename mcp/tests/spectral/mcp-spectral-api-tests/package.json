@@ -1,0 +1,10 @@
+{
+  "name": "mcp-spectral-api-tests",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local Spectral dependencies for the FastMCP API testing server",
+  "devDependencies": {
+    "@stoplight/spectral-cli": "6.15.1",
+    "@stoplight/spectral-owasp-ruleset": "2.0.1"
+  }
+}

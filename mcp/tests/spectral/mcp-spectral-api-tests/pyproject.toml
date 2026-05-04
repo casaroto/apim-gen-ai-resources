@@ -1,0 +1,17 @@
+[project]
+name = "mcp-spectral-api-tests"
+version = "0.1.0"
+description = "FastMCP server for running Spectral OpenAPI and OWASP API Security tests"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.2.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-xvs"

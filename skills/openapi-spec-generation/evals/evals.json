@@ -1,0 +1,37 @@
+{
+  "skill_name": "openapi-spec-generation",
+  "evals": [
+    {
+      "id": 0,
+      "name": "fresh-default-bcb-rates",
+      "prompt": "Generate an OpenAPI spec for /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/app/routes/bcb_rates.js. Save the result to /tmp/openapi-eval-fresh/openapi/app-routes-bcb-rates.yaml. Match the project's existing OpenAPI conventions (look at /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/openapi/ for sibling files).",
+      "expected_output": "A valid OpenAPI 3.0.3 yaml at the target path. All endpoints defined in the route file are present. Auth (if any) is detected from middleware. Unclear types are marked with # TODO rather than guessed. Style matches sibling specs.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 1,
+      "name": "merge-existing-crypto-operations",
+      "prompt": "Regenerate the OpenAPI spec for /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/app/routes/crypto_operations.js. An existing spec already lives at /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/openapi/app-routes-crypto-operations.yaml — first copy it to /tmp/openapi-eval-merge/openapi/app-routes-crypto-operations.yaml, then update that copy in place, preserving any hand-written descriptions and example values. Show me a unified diff of what changed before finalizing.",
+      "expected_output": "Existing manual descriptions and examples are preserved. New endpoints from the source are added. Stale endpoints are flagged with TODO comments rather than deleted. A unified diff is presented.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "name": "ibm-apic-dividend-calendar",
+      "prompt": "Generate an OpenAPI spec for /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/app/routes/dividend_calendar.js for deployment to IBM API Connect. Save to /tmp/openapi-eval-apic/openapi/app-routes-dividend-calendar.yaml.",
+      "expected_output": "A valid OpenAPI 3.0.3 yaml that includes IBM APIC extensions: x-ibm-name at root, x-ibm-configuration block with assembly invoke, X-IBM-Client-Id / X-IBM-Client-Secret security schemes. Source route auth is layered (not replaced). All endpoints present.",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "apigee-contact-email",
+      "prompt": "Generate an OpenAPI spec for /Users/casaroto/projetos/total-value-invest/stock-portfolio-git/stock-portfolio/app/routes/contact-email.js for deployment to Apigee X. Save to /tmp/openapi-eval-apigee/openapi/app-routes-contact-email.yaml.",
+      "expected_output": "A valid OpenAPI 3.0.3 yaml that includes Apigee X extensions: x-google-backend at root, apiKey security scheme (header: x-apikey). Source route auth (if detected) is layered, not replaced. All endpoints present.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

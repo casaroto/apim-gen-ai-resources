@@ -1,0 +1,38 @@
+{
+  "server": {
+    "url": "https://apigee.googleapis.com"
+  },
+  "authentication": [
+    {
+      "schema_parameters": {
+        "scheme": "bearer"
+      },
+      "type": "http",
+      "value": "BEARER_TOKEN"
+    }
+  ],
+  "operations": [
+    { "name": "apigee_organizations_apis_list",
+      "description": "List API proxies in the organization." },
+    { "name": "apigee_organizations_apis_create",
+      "description": "Import an API proxy bundle (creates a new revision)." },
+    { "name": "apigee_organizations_apiproducts_list",
+      "description": "List API products in the organization." },
+    { "name": "apigee_organizations_apiproducts_create",
+      "description": "Create an API product bundling proxy operations." },
+    { "name": "apigee_organizations_developers_create",
+      "description": "Register a developer in the organization." },
+    { "name": "apigee_organizations_developers_apps_create",
+      "description": "Create a developer app and obtain credentials." },
+    { "name": "apigee_organizations_environments_sharedflows_revisions_deploy",
+      "description": "Deploy a shared flow revision to an environment." },
+    { "name": "apigee_organizations_environments_sharedflows_revisions_undeploy",
+      "description": "Undeploy a shared flow revision from an environment." },
+    { "name": "generate_deployment_change_report",
+      "description": "Preview the impact of deploying an API proxy revision." },
+    { "name": "generate_upload_url_for_apigee_deployment",
+      "description": "Get a signed URL for uploading an API proxy bundle archive." },
+    { "name": "generate_download_url_for_apigee_environment_deployment",
+      "description": "Get a signed URL for downloading a deployed proxy bundle." }
+  ]
+}

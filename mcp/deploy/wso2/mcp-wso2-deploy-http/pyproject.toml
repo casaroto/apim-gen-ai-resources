@@ -1,0 +1,19 @@
+[project]
+name = "mcp-wso2-deploy-http"
+version = "0.1.0"
+description = "MCP server (streamable-http) for WSO2 API Manager 4.x deploy lifecycle"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.2.0",
+    "requests>=2.32.0",
+    "urllib3>=2.0.0",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-xvs"

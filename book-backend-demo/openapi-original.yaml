@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Books API
+  version: 1.0.0
+  description: A trivial Books API used to demo Kong API Gateway.
+servers:
+  - url: http://localhost:8000/books-api
+    description: Through Kong proxy
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: health
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+  /books:
+    get:
+      summary: List books
+      operationId: listBooks
+      responses:
+        "200":
+          description: list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Book" }
+    post:
+      summary: Create a book
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, author]
+              properties:
+                title: { type: string }
+                author: { type: string }
+      responses:
+        "201":
+          description: created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Book" }
+        "400":
+          description: bad request
+  /books/{id}:
+    get:
+      summary: Get a book by id
+      operationId: getBook
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: book
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Book" }
+        "404":
+          description: not found
+components:
+  schemas:
+    Book:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        author: { type: string }

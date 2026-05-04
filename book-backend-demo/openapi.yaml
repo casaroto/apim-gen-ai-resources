@@ -1,0 +1,322 @@
+openapi: 3.0.3
+info:
+  title: Books API
+  version: 1.0.0
+  description: A trivial Books API used to demo Kong API Gateway.
+  contact:
+    name: API Platform Team
+    url: https://localhost:8443/books-api
+servers:
+  - url: https://localhost:8443/books-api
+    description: Local development endpoint through the Kong proxy.
+    x-internal: false
+security:
+  - bearerAuth: []
+tags:
+  - name: Health
+    description: Service health and readiness checks.
+  - name: Books
+    description: Book catalog operations.
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns the service health status for monitoring and gateway checks.
+      operationId: health
+      responses:
+        "200":
+          description: The service is healthy.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: "#/components/headers/Access-Control-Allow-Origin"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/RateLimitReset"
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /books:
+    get:
+      tags: [Books]
+      summary: List books
+      description: Returns a bounded list of books from the catalog.
+      operationId: listBooks
+      responses:
+        "200":
+          description: A list of books.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: "#/components/headers/Access-Control-Allow-Origin"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/RateLimitReset"
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: "#/components/schemas/Book"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    post:
+      tags: [Books]
+      summary: Create a book
+      description: Creates a new book entry in the catalog.
+      operationId: createBook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookRequest"
+      responses:
+        "201":
+          description: The book was created.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: "#/components/headers/Access-Control-Allow-Origin"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/RateLimitReset"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /books/{id}:
+    get:
+      tags: [Books]
+      summary: Get a book by id
+      description: Returns a single book by its opaque UUID identifier.
+      operationId: getBook
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Opaque book identifier.
+          schema:
+            type: string
+            format: uuid
+            maxLength: 36
+      responses:
+        "200":
+          description: The requested book.
+          headers:
+            Access-Control-Allow-Origin:
+              $ref: "#/components/headers/Access-Control-Allow-Origin"
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/RateLimitLimit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/RateLimitRemaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/RateLimitReset"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Book"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT bearer token authentication following RFC8725 best current practices.
+  headers:
+    Access-Control-Allow-Origin:
+      description: Allowed CORS origin for browser clients.
+      schema:
+        type: string
+        enum: ["https://localhost:8443"]
+    RateLimitLimit:
+      description: Request limit for the current window.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 10000
+    RateLimitRemaining:
+      description: Remaining requests in the current window.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 10000
+    RateLimitReset:
+      description: Seconds until the current rate-limit window resets.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 86400
+    RetryAfter:
+      description: Seconds to wait before retrying after rate limiting.
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        maximum: 86400
+  responses:
+    BadRequest:
+      description: The request is invalid or cannot be processed.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/RateLimitLimit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimitRemaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/RateLimitReset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Authentication is missing or invalid.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/RateLimitLimit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimitRemaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/RateLimitReset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: The requested resource was not found.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/RateLimitLimit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimitRemaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/RateLimitReset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    TooManyRequests:
+      description: Too many requests were sent in the current rate-limit window.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+        Retry-After:
+          $ref: "#/components/headers/RetryAfter"
+        X-RateLimit-Limit:
+          $ref: "#/components/headers/RateLimitLimit"
+        X-RateLimit-Remaining:
+          $ref: "#/components/headers/RateLimitRemaining"
+        X-RateLimit-Reset:
+          $ref: "#/components/headers/RateLimitReset"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    InternalServerError:
+      description: Unexpected server error.
+      headers:
+        Access-Control-Allow-Origin:
+          $ref: "#/components/headers/Access-Control-Allow-Origin"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    Book:
+      type: object
+      required: [id, title, author]
+      properties:
+        id:
+          type: string
+          format: uuid
+          maxLength: 36
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: \S
+        author:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: \S
+    CreateBookRequest:
+      type: object
+      required: [title, author]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: \S
+        author:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: \S
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          pattern: "^[A-Z0-9_]+$"
+        message:
+          type: string
+          maxLength: 512
+          pattern: \S

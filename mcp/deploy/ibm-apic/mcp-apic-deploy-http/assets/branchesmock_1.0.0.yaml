@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: BranchesMock
+  x-ibm-name: branchesmock
+servers:
+  - url: /branchesmock
+x-ibm-configuration:
+  properties:
+    target-url:
+      value: http://example.com/operation-name
+      description: The URL of the target service
+      encoded: false
+  cors:
+    enabled: true
+  gateway: datapower-api-gateway
+  type: rest
+  phase: realized
+  enforced: true
+  testable: true
+  assembly:
+    execute:
+      - gatewayscript:
+          version: 2.0.0
+          title: gatewayscript
+          source: |-
+            // IBM APIC Gateway Script - Return Fixed JSON
+
+            // Define your fixed JSON response
+            var fixedResponse = [
+              {
+                "id": "@b3a8cf0-7e78-11e5-8059-a1020f32cce5",
+                "type": "atm",
+                "address": {
+                  "street1": "600 Anton Blvd.",
+                  "street2": "Floor 5",
+                  "city": "Costa Mesa",
+                  "state": "CA",
+                  "zip_code": "92626"
+                }
+              }
+            ];
+
+            // Set the response body
+            context.message.body.write(fixedResponse);
+
+            // Set response headers
+            context.message.header.set('Content-Type', 'application/json');
+            context.message.statusCode = '200 OK';
+
+            // Optional: Add custom headers
+            context.message.header.set('X-Custom-Header', 'Fixed-Response');
+      - parse:
+          version: 2.2.0
+          title: parse
+          parse-settings-reference:
+            default: apic-default-parsesettings
+          input: ''
+  activity-log:
+    enabled: true
+    success-content: activity
+    error-content: payload
+  application-authentication-source:
+    - header
+paths:
+  /:
+    get:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    put:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    post:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    delete:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    head:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    patch:
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: string
+    parameters: []
+components:
+  responses:
+    '200':
+      description: dsdasd wdas
+      content:
+        application/json:
+          example:
+            - id: '@b3a8cf0-7e78-11e5-8059-a1020f32cce5'
+              type: atm
+              address:
+                street1: 600 Anton Blvd.
+                street2: Floor 5
+                city: Costa Mesa
+                state: CA
+                zip_code: '92626'
+  securitySchemes:
+    apikey:
+      type: apiKey
+      x-key-type: client_id
+      name: X-IBM-Client-Id
+      in: header
+security:
+  - apikey: []

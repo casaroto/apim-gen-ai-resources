@@ -1,0 +1,42 @@
+services:
+  wso2am:
+    image: wso2/wso2am:4.3.0
+    container_name: wso2am
+    ports:
+      - "9443:9443"   # HTTPS consoles + Publisher/DevPortal/Admin REST
+      - "8243:8243"   # HTTPS gateway
+      - "8280:8280"   # HTTP gateway
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://localhost:9443/services/Version"]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+      start_period: 180s
+    volumes:
+      # Embedded H2 databases (governance, user-mgmt, APIM, shared) — APIs, users, subscriptions
+      - wso2am-database:/home/wso2carbon/wso2am-4.3.0/repository/database
+      # Deployed synapse configs (gateway runtime artifacts created when APIs are deployed)
+      - wso2am-deployment:/home/wso2carbon/wso2am-4.3.0/repository/deployment
+      # Tenant data
+      - wso2am-tenants:/home/wso2carbon/wso2am-4.3.0/repository/tenants
+      # Solr search index (regeneratable but persists for fast restarts)
+      - wso2am-solr:/home/wso2carbon/solr
+      # Carbon logs (handy for debugging across restarts)
+      - wso2am-logs:/home/wso2carbon/wso2am-4.3.0/repository/logs
+    networks:
+      - wso2-net
+      - kong-net
+
+volumes:
+  wso2am-database:
+  wso2am-deployment:
+  wso2am-tenants:
+  wso2am-solr:
+  wso2am-logs:
+
+networks:
+  wso2-net:
+    driver: bridge
+  kong-net:
+    external: true
+    name: kong-demo_kong-net
