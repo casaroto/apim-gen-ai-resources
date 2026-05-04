@@ -109,12 +109,19 @@ mcp-apic-deploy-http/
 
 ## How to use it
 
+Before building and running this MCP server, fill in the deployment values in:
+
+- [`config.properties`](config.properties) — set the API Connect server, username, password, catalog URL, catalog name, and any other environment-specific values.
+- [`assets/credentials.json`](assets/credentials.json) — set the IBM API Connect toolkit endpoints, client IDs, client secrets, and cloud ID required by the `apic` CLI.
+
+The deploy flow depends on those files. If either file keeps the placeholder or empty values, the MCP tools can start, but `apic_login`, `apic_publish_product`, and `apic_deploy_product` will not be able to deploy successfully.
+
 From a Claude Code session, the same five tools are available under the new server:
 
 - "Use `apic_deploy_product` on the `apic-deploy-http` server to publish `branches_1.0.0.yaml`."
 - "Run `apic_publish_product` with `product_file=branchesmock_1.0.0.yaml`."
 
-Zero-argument calls work out of the box (config baked into the image).
+After those values are filled, zero-argument calls work because the completed config is baked into the image at build time.
 
 ### Lifecycle
 
