@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import os
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -51,6 +53,43 @@ def wso2_import_openapi(
         openapi_path=openapi_path, target_endpoint=target_endpoint,
     )
     return {"api_id": api["id"], "name": api["name"], "version": api["version"], "context": api["context"]}
+
+
+@mcp.tool()
+def wso2_import_openapi_file(
+    name: str,
+    version: str,
+    context: str,
+    openapi_file: str,
+    target_endpoint: str,
+    file_name: str = "openapi.yaml",
+) -> dict[str, Any]:
+    """Create a WSO2 API from OpenAPI YAML/JSON content supplied directly."""
+    if not openapi_file.strip():
+        raise ValueError("openapi_file must contain OpenAPI YAML or JSON content.")
+    suffix = Path(file_name).suffix or ".yaml"
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=suffix,
+            prefix="wso2-openapi-",
+            encoding="utf-8",
+            delete=False,
+        ) as temp_file:
+            temp_file.write(openapi_file)
+            temp_path = Path(temp_file.name)
+
+        return wso2_import_openapi(
+            name=name,
+            version=version,
+            context=context,
+            openapi_path=str(temp_path),
+            target_endpoint=target_endpoint,
+        )
+    finally:
+        if temp_path and temp_path.exists():
+            temp_path.unlink()
 
 
 @mcp.tool()

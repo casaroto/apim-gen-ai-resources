@@ -11,6 +11,7 @@ import logging
 import os
 import subprocess
 import sys
+import tempfile
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -136,6 +137,23 @@ def _require(value: str, name: str) -> str:
     return value
 
 
+def _temp_working_file(working_dir: str, content: str, file_name: str, prefix: str) -> Path:
+    if not str(content).strip():
+        raise ValueError(f"missing required file content '{prefix}'")
+    suffix = Path(file_name or "").suffix or ".yaml"
+    Path(working_dir).mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=suffix,
+        prefix=f"{prefix}-",
+        dir=working_dir,
+        encoding="utf-8",
+        delete=False,
+    ) as tmp:
+        tmp.write(content)
+        return Path(tmp.name)
+
+
 def tool_set_credentials(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
     creds = args.get("credentials_file") or cfg.credentials_file
     creds = _require(creds, "credentials_file")
@@ -210,6 +228,61 @@ def tool_deploy_product(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def tool_set_credentials_file(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
+    tmp_path = _temp_working_file(
+        cfg.working_dir,
+        args.get("credentials_json") or args.get("credentials_file") or "",
+        args.get("file_name") or "credentials.json",
+        "credentials",
+    )
+    try:
+        return tool_set_credentials(cfg, {"credentials_file": str(tmp_path)})
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
+def tool_publish_product_file(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
+    tmp_path = _temp_working_file(
+        cfg.working_dir,
+        args.get("product_yaml") or args.get("product_file") or "",
+        args.get("file_name") or "product.yaml",
+        "product",
+    )
+    try:
+        next_args = dict(args)
+        next_args["product_file"] = str(tmp_path)
+        return tool_publish_product(cfg, next_args)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
+def tool_deploy_product_file(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
+    product_path = _temp_working_file(
+        cfg.working_dir,
+        args.get("product_yaml") or args.get("product_file") or "",
+        args.get("product_file_name") or args.get("file_name") or "product.yaml",
+        "product",
+    )
+    credentials_path: Path | None = None
+    try:
+        next_args = dict(args)
+        next_args["product_file"] = str(product_path)
+        credentials_content = args.get("credentials_json")
+        if credentials_content:
+            credentials_path = _temp_working_file(
+                cfg.working_dir,
+                credentials_content,
+                args.get("credentials_file_name") or "credentials.json",
+                "credentials",
+            )
+            next_args["credentials_file"] = str(credentials_path)
+        return tool_deploy_product(cfg, next_args)
+    finally:
+        product_path.unlink(missing_ok=True)
+        if credentials_path:
+            credentials_path.unlink(missing_ok=True)
+
+
 TOOL_DEFINITIONS: list[Tool] = [
     Tool(
         name="apic_set_credentials",
@@ -272,6 +345,56 @@ TOOL_DEFINITIONS: list[Tool] = [
             },
         },
     ),
+    Tool(
+        name="apic_set_credentials_file",
+        description="Set API Connect client credentials from credentials JSON content supplied directly to the MCP tool.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "credentials_json": {"type": "string"},
+                "credentials_file": {"type": "string", "description": "Alias for credentials_json content."},
+                "file_name": {"type": "string", "default": "credentials.json"},
+            },
+            "required": ["credentials_json"],
+        },
+    ),
+    Tool(
+        name="apic_publish_product_file",
+        description="Publish an API product from product YAML content supplied directly to the MCP tool.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "product_yaml": {"type": "string"},
+                "product_file": {"type": "string", "description": "Alias for product_yaml content."},
+                "file_name": {"type": "string", "default": "product.yaml"},
+                "catalog_name": {"type": "string"},
+                "scope": {"type": "string", "default": "catalog"},
+            },
+            "required": ["product_yaml"],
+        },
+    ),
+    Tool(
+        name="apic_deploy_product_file",
+        description="Run the full APIC deploy flow from product YAML content, optionally with credentials JSON content.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "product_yaml": {"type": "string"},
+                "product_file": {"type": "string", "description": "Alias for product_yaml content."},
+                "product_file_name": {"type": "string", "default": "product.yaml"},
+                "credentials_json": {"type": "string"},
+                "credentials_file_name": {"type": "string", "default": "credentials.json"},
+                "server": {"type": "string"},
+                "username": {"type": "string"},
+                "password": {"type": "string"},
+                "realm": {"type": "string"},
+                "catalog_url": {"type": "string"},
+                "catalog_name": {"type": "string"},
+                "scope": {"type": "string", "default": "catalog"},
+            },
+            "required": ["product_yaml"],
+        },
+    ),
 ]
 
 TOOL_DISPATCH = {
@@ -280,6 +403,9 @@ TOOL_DISPATCH = {
     "apic_set_catalog": tool_set_catalog,
     "apic_publish_product": tool_publish_product,
     "apic_deploy_product": tool_deploy_product,
+    "apic_set_credentials_file": tool_set_credentials_file,
+    "apic_publish_product_file": tool_publish_product_file,
+    "apic_deploy_product_file": tool_deploy_product_file,
 }
 
 

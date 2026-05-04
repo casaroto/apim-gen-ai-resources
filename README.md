@@ -1,6 +1,18 @@
 # APIM Gen AI Resources
 
-Este repositório reúne recursos para um ciclo completo de trabalho com APIs usando GenAI:
+
+
+Objetivo: Demonstrar como o uso de GenAI permite aumento de providade e qualidade, ao utilizar MCP, skills e agents para gestão do ciclo de vida completo de APIs.
+A ideia final é aumentar a qualidade das APIs expostas. APIs são um dos maiores vetores de problemas de segurança atualmente, e ainda há um baixo nível de maturidade de gestão de APIs em muitas empresas.
+
+Produtos e soluções utilizadas: é dado enfase no uso de soluções Open Source, mas também há exemplos para uso com produtos comerciais Google APIGee e IBM API Connect.
+
+Observação: para uso com o IBM API Connect é indicado o uso da ferramenta nativa do produto. https://www.ibm.com/docs/en/api-connect/software/12.1.0?topic=agent-api-overview
+Esse conjunto de ferramentas cobre tudo que é proposto neste repositório.
+
+Este repositório reúne recursos para um ciclo completo de trabalho com APIs usando GenAI.
+
+Os exemplos permitem:
 
 1. subir um backend de exemplo;
 2. gerar uma especificação OpenAPI;

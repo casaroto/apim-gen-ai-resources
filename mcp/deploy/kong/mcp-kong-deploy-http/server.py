@@ -178,19 +178,12 @@ def tool_delete_service(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
     return final
 
 
-def tool_apply_openapi(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
-    spec_arg = _require(args.get("spec_file"), "spec_file")
-    p = Path(spec_arg)
-    if not p.is_absolute():
-        p = Path(cfg.working_dir) / p
-    if not p.exists():
-        return {"ok": False, "error": f"spec file not found: {p}"}
-
-    try:
-        spec = yaml.safe_load(p.read_text(encoding="utf-8"))
-    except yaml.YAMLError as e:
-        return {"ok": False, "error": f"invalid YAML in {p}: {e}"}
-
+def _apply_openapi_document(
+    cfg: Config,
+    args: dict[str, Any],
+    spec: dict[str, Any],
+    source_name: str,
+) -> dict[str, Any]:
     info = spec.get("info") or {}
     title = info.get("title") or "api"
     version = info.get("version") or ""
@@ -234,9 +227,38 @@ def tool_apply_openapi(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
         "route": route_name,
         "route_path": route_path,
         "upstream_url": upstream_url,
-        "spec_file": str(p),
+        "spec_file": source_name,
         "steps": steps,
     }
+
+
+def tool_apply_openapi(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
+    spec_arg = _require(args.get("spec_file"), "spec_file")
+    p = Path(spec_arg)
+    if not p.is_absolute():
+        p = Path(cfg.working_dir) / p
+    if not p.exists():
+        return {"ok": False, "error": f"spec file not found: {p}"}
+
+    try:
+        spec = yaml.safe_load(p.read_text(encoding="utf-8"))
+    except yaml.YAMLError as e:
+        return {"ok": False, "error": f"invalid YAML in {p}: {e}"}
+    if not isinstance(spec, dict):
+        return {"ok": False, "error": f"OpenAPI file must contain an object: {p}"}
+    return _apply_openapi_document(cfg, args, spec, str(p))
+
+
+def tool_apply_openapi_file(cfg: Config, args: dict[str, Any]) -> dict[str, Any]:
+    openapi_file = _require(args.get("openapi_file") or args.get("spec_file"), "openapi_file")
+    file_name = args.get("file_name") or "openapi.yaml"
+    try:
+        spec = yaml.safe_load(openapi_file)
+    except yaml.YAMLError as e:
+        return {"ok": False, "error": f"invalid YAML in {file_name}: {e}"}
+    if not isinstance(spec, dict):
+        return {"ok": False, "error": f"OpenAPI file must contain an object: {file_name}"}
+    return _apply_openapi_document(cfg, args, spec, file_name)
 
 
 TOOL_DEFINITIONS: list[Tool] = [
@@ -311,6 +333,24 @@ TOOL_DEFINITIONS: list[Tool] = [
             "required": ["spec_file"],
         },
     ),
+    Tool(
+        name="kong_apply_openapi_file",
+        description="Deploy OpenAPI YAML/JSON content supplied directly to the MCP tool as a Kong Service+Route.",
+        inputSchema={
+            "type": "object",
+            "properties": {
+                "openapi_file": {"type": "string", "description": "OpenAPI YAML/JSON content."},
+                "spec_file": {"type": "string", "description": "Alias for openapi_file content."},
+                "file_name": {"type": "string", "default": "openapi.yaml"},
+                "upstream_url": {"type": "string", "description": "Where Kong should send traffic (e.g. http://backend:3000)."},
+                "service_name": {"type": "string"},
+                "route_name": {"type": "string"},
+                "route_path": {"type": "string"},
+                "strip_path": {"type": "boolean", "default": True},
+            },
+            "required": ["openapi_file"],
+        },
+    ),
 ]
 
 TOOL_DISPATCH = {
@@ -321,6 +361,7 @@ TOOL_DISPATCH = {
     "kong_apply_route": tool_apply_route,
     "kong_delete_service": tool_delete_service,
     "kong_apply_openapi": tool_apply_openapi,
+    "kong_apply_openapi_file": tool_apply_openapi_file,
 }
 
 
